@@ -1,0 +1,53 @@
+{
+  "name": "module",
+  "functions": [
+    {
+      "name": "increment",
+      "args": ["x"],
+      "body": [
+        {
+          "label": "entry",
+          "instructions": [
+            {
+              "op": "add",
+              "name": "ret",
+              "lhs": 5,
+              "rhs": "x"
+            }
+          ],
+          "terminator": {
+            "terminator": "ret",
+            "value": "ret"
+          }
+        }
+      ]
+    },
+    {
+      "name": "main",
+      "args": [],
+      "body": [
+        {
+          "label": "entry",
+          "instructions": [
+            {
+              "op": "call",
+              "name": "foo",
+              "callee": "increment",
+              "args": [5]
+            },
+            {
+              "op": "add",
+              "name": "ret",
+              "lhs": 5,
+              "rhs": "foo"
+            }
+          ],
+          "terminator": {
+            "terminator": "ret",
+            "value": "ret"
+          }
+        }
+      ]
+    }
+  ]
+}

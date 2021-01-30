@@ -1,53 +1,204 @@
 {
-  "name": "module",
-  "functions": [
-    {
-      "name": "increment",
-      "args": ["x"],
-      "body": [
+    "name": "module",
+    "functions": [
         {
-          "label": "entry",
-          "instructions": [
-            {
-              "op": "add",
-              "name": "ret",
-              "lhs": 5,
-              "rhs": "x"
-            }
-          ],
-          "terminator": {
-            "terminator": "ret",
-            "value": "ret"
-          }
-        }
-      ]
-    },
-    {
-      "name": "main",
-      "args": [],
-      "body": [
+            "blocks": [
+                {
+                    "instructions": [
+                        {
+                            "op": "add",
+                            "lhs": {
+                                "name": "a"
+                            },
+                            "tag": "binary",
+                            "name": "increment",
+                            "rhs": 1
+                        },
+                        {
+                            "op": "add",
+                            "lhs": {
+                                "name": "increment"
+                            },
+                            "tag": "binary",
+                            "name": "i-1",
+                            "rhs": {
+                                "name": "increment"
+                            }
+                        }
+                    ],
+                    "label": "i-0",
+                    "terminator": {
+                        "tag": "ret",
+                        "value": {
+                            "name": "i-1"
+                        }
+                    }
+                }
+            ],
+            "param_type": "i32",
+            "ret_type": "i32",
+            "name": "increment_then_twice",
+            "param": "a"
+        },
         {
-          "label": "entry",
-          "instructions": [
-            {
-              "op": "call",
-              "name": "foo",
-              "callee": "increment",
-              "args": [5]
-            },
-            {
-              "op": "add",
-              "name": "ret",
-              "lhs": 5,
-              "rhs": "foo"
-            }
-          ],
-          "terminator": {
-            "terminator": "ret",
-            "value": "ret"
-          }
+            "blocks": [
+                {
+                    "instructions": [
+                        {
+                            "op": "add",
+                            "lhs": 1,
+                            "tag": "binary",
+                            "name": "i-1",
+                            "rhs": 2
+                        },
+                        {
+                            "op": "add",
+                            "lhs": {
+                                "name": "i-1"
+                            },
+                            "tag": "binary",
+                            "name": "a",
+                            "rhs": 3
+                        },
+                        {
+                            "op": "add",
+                            "lhs": 2,
+                            "tag": "binary",
+                            "name": "i-2",
+                            "rhs": 1
+                        },
+                        {
+                            "op": "mul",
+                            "lhs": {
+                                "name": "a"
+                            },
+                            "tag": "binary",
+                            "name": "i-3",
+                            "rhs": {
+                                "name": "i-2"
+                            }
+                        },
+                        {
+                            "op": "sub",
+                            "lhs": {
+                                "name": "i-3"
+                            },
+                            "tag": "binary",
+                            "name": "qwer",
+                            "rhs": 4
+                        },
+                        {
+                            "op": "and",
+                            "lhs": false,
+                            "tag": "binary",
+                            "name": "bo",
+                            "rhs": false
+                        }
+                    ],
+                    "label": "i-0",
+                    "terminator": {
+                        "tag": "cond_br",
+                        "cond": {
+                            "name": "bo"
+                        },
+                        "then": "i-4",
+                        "else": "i-5"
+                    }
+                },
+                {
+                    "instructions": [
+                        {
+                            "op": "add",
+                            "lhs": 3,
+                            "tag": "binary",
+                            "name": "i-6",
+                            "rhs": 2
+                        }
+                    ],
+                    "label": "i-4",
+                    "terminator": {
+                        "tag": "br",
+                        "label": "i-7"
+                    }
+                },
+                {
+                    "instructions": [],
+                    "label": "i-5",
+                    "terminator": {
+                        "tag": "br",
+                        "label": "i-7"
+                    }
+                },
+                {
+                    "instructions": [
+                        {
+                            "tag": "phi",
+                            "else_label": "i-5",
+                            "then_label": "i-4",
+                            "then": {
+                                "name": "i-6"
+                            },
+                            "name": "test",
+                            "else": 2
+                        },
+                        {
+                            "op": "sgt",
+                            "lhs": {
+                                "name": "test"
+                            },
+                            "tag": "binary",
+                            "name": "i-8",
+                            "rhs": 2
+                        },
+                        {
+                            "op": "and",
+                            "lhs": {
+                                "name": "bo"
+                            },
+                            "tag": "binary",
+                            "name": "ref.0",
+                            "rhs": {
+                                "name": "i-8"
+                            }
+                        },
+                        {
+                            "op": "or",
+                            "lhs": true,
+                            "tag": "binary",
+                            "name": "ref",
+                            "rhs": {
+                                "name": "ref.0"
+                            }
+                        },
+                        {
+                            "op": "mul",
+                            "lhs": 5,
+                            "tag": "binary",
+                            "name": "doubledef_a",
+                            "rhs": 5
+                        },
+                        {
+                            "tag": "call",
+                            "arg": 4,
+                            "name": "i-9",
+                            "caller": {
+                                "name": "increment_then_twice"
+                            }
+                        }
+                    ],
+                    "label": "i-7",
+                    "terminator": {
+                        "tag": "ret",
+                        "value": {
+                            "name": "i-9"
+                        }
+                    }
+                }
+            ],
+            "param_type": "void",
+            "ret_type": "i32",
+            "name": "main",
+            "param": ""
         }
-      ]
-    }
-  ]
+    ]
 }

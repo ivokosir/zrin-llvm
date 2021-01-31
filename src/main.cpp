@@ -1,3 +1,4 @@
+#include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Bitcode/BitcodeWriter.h"
@@ -17,12 +18,16 @@ using namespace llvm;
 
 struct FunctionState
 {
+  FunctionState(Module &M, IRBuilder<> &B, Function *const F)
+      : C(M.getContext()), M(M), B(B), F(F),
+        UnnamedValueTable(), LabelTable() {}
   LLVMContext &C;
   Module &M;
   IRBuilder<> &B;
   Function *const F;
-  StringMap<Value *> TV;
-  StringMap<BasicBlock *> TBB;
+  StringMap<Value *> ValueTable;
+  DenseMap<int, Value *> UnnamedValueTable;
+  DenseMap<int, BasicBlock *> LabelTable;
 };
 
 FunctionType *generateFunctionType(Type *const ret, Type *const param)
@@ -56,11 +61,26 @@ Type *const generateType(const json::Object &object, const StringRef key, IRBuil
   return nullptr;
 }
 
+BasicBlock *const generateLabel(const int64_t i, FunctionState &S)
+{
+  const auto iter = S.LabelTable.find_as(i);
+  if (iter == S.LabelTable.end())
+  {
+    const auto BB = BasicBlock::Create(S.C, "", S.F);
+    S.LabelTable[i] = BB;
+    return BB;
+  }
+  return iter->second;
+}
+
 Value *const generateValue(const json::Value &value, FunctionState &S)
 {
-  if (const auto name = value.getAsObject())
+  if (const auto object = value.getAsObject())
   {
-    return S.TV.lookup(*name->getString("name"));
+    if (const auto name = object->getString("name"))
+      return S.ValueTable.lookup(*name);
+    else if (const auto iName = object->getInteger("name"))
+      return S.UnnamedValueTable.operator[](*iName);
   }
   else if (const auto boolean = value.getAsBoolean())
   {
@@ -72,26 +92,13 @@ Value *const generateValue(const json::Value &value, FunctionState &S)
   }
   else if (value.getAsNull())
   {
-    const auto type = PointerType::getUnqual(S.B.getVoidTy());
-    return ConstantPointerNull::get(type);
+    return nullptr;
   }
 
   return nullptr;
 }
 
-BasicBlock *getOrCreateBasicBlock(const StringRef label, FunctionState &S)
-{
-  auto found = S.TBB.find(label);
-  if (found == S.TBB.end())
-  {
-    auto newBB = BasicBlock::Create(S.C, label, S.F);
-    S.TBB[label] = newBB;
-    return newBB;
-  }
-  return found->getValue();
-}
-
-Value *generateBinaryOperation(const json::Object &instruction, const llvm::StringRef name, FunctionState &S)
+Value *generateBinary(const json::Object &instruction, const llvm::StringRef name, FunctionState &S)
 {
   const auto op = *instruction.getString("op");
   const auto lhs = generateValue(*instruction.get("lhs"), S);
@@ -107,7 +114,6 @@ Value *generateBinaryOperation(const json::Object &instruction, const llvm::Stri
     return S.B.CreateSDiv(lhs, rhs, name);
   else if (op == "mod")
     return S.B.CreateSRem(lhs, rhs, name);
-
   else if (op == "and")
     return S.B.CreateAnd(lhs, rhs, name);
   else if (op == "or")
@@ -138,7 +144,7 @@ Value *generateBinaryOperation(const json::Object &instruction, const llvm::Stri
   return nullptr;
 }
 
-Value *generateCall(const json::Object &instruction, const llvm::StringRef name, FunctionState &S)
+llvm::CallInst *generateCall(const json::Object &instruction, const llvm::StringRef name, FunctionState &S)
 {
   const auto Caller = S.M.getFunction(*instruction.getObject("caller")->getString("name"));
   const auto Arg = generateValue(*instruction.get("arg"), S);
@@ -146,54 +152,61 @@ Value *generateCall(const json::Object &instruction, const llvm::StringRef name,
   return S.B.CreateCall(Caller->getFunctionType(), Caller, {Arg}, name);
 }
 
-Value *generatePHI(const json::Object &instruction, const llvm::StringRef name, FunctionState &S)
+llvm::PHINode *generatePHI(const json::Object &instruction, const llvm::StringRef name, FunctionState &S)
 {
-  const auto thenValue = generateValue(*instruction.get("then"), S);
-  const auto thenBB = getOrCreateBasicBlock(*instruction.getString("then_label"), S);
-  const auto elseValue = generateValue(*instruction.get("else"), S);
-  const auto elseBB = getOrCreateBasicBlock(*instruction.getString("else_label"), S);
+  const auto Then = generateValue(*instruction.get("then"), S);
+  const auto ThenBB = generateLabel(*instruction.getInteger("then_label"), S);
+  const auto Else = generateValue(*instruction.get("else"), S);
+  const auto ElseBB = generateLabel(*instruction.getInteger("else_label"), S);
 
-  const auto phi = S.B.CreatePHI(thenValue->getType(), 2, name);
-  phi->addIncoming(thenValue, thenBB);
-  phi->addIncoming(elseValue, elseBB);
+  const auto PHI = S.B.CreatePHI(Then->getType(), 2, name);
+  PHI->addIncoming(Then, ThenBB);
+  PHI->addIncoming(Else, ElseBB);
 
-  return phi;
+  return PHI;
 }
 
 Value *generateInstruction(const json::Object &instruction, FunctionState &S)
 {
   const auto tag = *instruction.getString("tag");
-  StringRef name = *instruction.getString("name");
+  const auto name = instruction.getString("name").getValueOr("");
 
   Value *I;
   if (tag == "binary")
-    I = generateBinaryOperation(instruction, name, S);
+    I = generateBinary(instruction, name, S);
   else if (tag == "call")
     I = generateCall(instruction, name, S);
   else if (tag == "phi")
     I = generatePHI(instruction, name, S);
 
-  S.TV[name] = I;
+  if (const auto iName = instruction.getInteger("name"))
+    S.UnnamedValueTable[*iName] = I;
+  else
+    S.ValueTable[name] = I;
+
   return I;
 }
 
 void generateRet(const json::Object &terminator, FunctionState &S)
 {
   const auto value = generateValue(*terminator.get("value"), S);
-  S.B.CreateRet(value);
+  if (value)
+    S.B.CreateRet(value);
+  else
+    S.B.CreateRetVoid();
 }
 
 void generateCondBr(const json::Object &terminator, FunctionState &S)
 {
   const auto Cond = generateValue(*terminator.get("cond"), S);
-  const auto Then = getOrCreateBasicBlock(*terminator.getString("then"), S);
-  const auto Else = getOrCreateBasicBlock(*terminator.getString("else"), S);
+  const auto Then = generateLabel(*terminator.getInteger("then"), S);
+  const auto Else = generateLabel(*terminator.getInteger("else"), S);
   S.B.CreateCondBr(Cond, Then, Else);
 }
 
 void generateBr(const json::Object &terminator, FunctionState &S)
 {
-  const auto Label = getOrCreateBasicBlock(*terminator.getString("label"), S);
+  const auto Label = generateLabel(*terminator.getInteger("label"), S);
   S.B.CreateBr(Label);
 }
 
@@ -211,13 +224,12 @@ void generateTerminator(const json::Object &terminator, FunctionState &S)
 
 void generateBasicBlock(const json::Object &basicBlock, FunctionState &S)
 {
-  const auto label = *basicBlock.getString("label");
+  const auto label = *basicBlock.getInteger("label");
   const auto &instructions = *basicBlock.getArray("instructions");
   const auto &terminator = *basicBlock.getObject("terminator");
 
-  auto BB = getOrCreateBasicBlock(label, S);
+  const auto BB = generateLabel(label, S);
   S.B.SetInsertPoint(BB);
-  auto add = S.B.CreateAdd(S.B.getInt32(5), S.B.getInt32(4));
 
   for (auto &i : instructions)
   {
@@ -239,13 +251,13 @@ void generateFunction(const json::Object &function, Module &M, IRBuilder<> &B)
   const auto FType = generateFunctionType(retType, paramType);
   const auto F = Function::Create(FType, Function::ExternalLinkage, name, M);
 
-  FunctionState S{M.getContext(), M, B, F};
+  FunctionState S(M, B, F);
 
   if (!F->args().empty())
   {
     const auto arg = F->getArg(0);
     arg->setName(param);
-    S.TV[param] = arg;
+    S.ValueTable[param] = arg;
   }
 
   for (auto &bb : body)

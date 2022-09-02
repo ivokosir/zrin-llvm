@@ -1,317 +1,129 @@
 {
-    "name": "module",
-    "functions": [
+  "name": "module",
+  "functions": [
+    {
+      "name": "foo_func",
+      "ret_type": "i32",
+      "param": "one",
+      "param_type": "i32",
+      "blocks": [
         {
-            "blocks": [
-                {
-                    "instructions": [
-                        {
-                            "op": "add",
-                            "lhs": {
-                                "name": "one"
-                            },
-                            "tag": "binary",
-                            "name": 0,
-                            "rhs": 2
-                        },
-                        {
-                            "op": "add",
-                            "lhs": {
-                                "name": 0
-                            },
-                            "tag": "binary",
-                            "name": "a",
-                            "rhs": 3
-                        },
-                        {
-                            "op": "add",
-                            "lhs": 2,
-                            "tag": "binary",
-                            "name": 1,
-                            "rhs": 1
-                        },
-                        {
-                            "op": "mul",
-                            "lhs": {
-                                "name": "a"
-                            },
-                            "tag": "binary",
-                            "name": 2,
-                            "rhs": {
-                                "name": 1
-                            }
-                        },
-                        {
-                            "op": "sub",
-                            "lhs": {
-                                "name": 2
-                            },
-                            "tag": "binary",
-                            "name": "qwer",
-                            "rhs": 4
-                        },
-                        {
-                            "op": "sgt",
-                            "lhs": {
-                                "name": "qwer"
-                            },
-                            "tag": "binary",
-                            "name": 3,
-                            "rhs": 5
-                        },
-                        {
-                            "op": "and",
-                            "lhs": false,
-                            "tag": "binary",
-                            "name": "bo",
-                            "rhs": {
-                                "name": 3
-                            }
-                        }
-                    ],
-                    "label": 0,
-                    "terminator": {
-                        "tag": "cond_br",
-                        "cond": {
-                            "name": "bo"
-                        },
-                        "then": 1,
-                        "else": 2
-                    }
-                },
-                {
-                    "instructions": [
-                        {
-                            "op": "eq",
-                            "lhs": {
-                                "name": "one"
-                            },
-                            "tag": "binary",
-                            "name": 4,
-                            "rhs": 1
-                        }
-                    ],
-                    "label": 1,
-                    "terminator": {
-                        "tag": "cond_br",
-                        "cond": {
-                            "name": 4
-                        },
-                        "then": 3,
-                        "else": 4
-                    }
-                },
-                {
-                    "instructions": [
-                        {
-                            "op": "add",
-                            "lhs": {
-                                "name": "one"
-                            },
-                            "tag": "binary",
-                            "name": "special",
-                            "rhs": 1
-                        },
-                        {
-                            "op": "mul",
-                            "lhs": {
-                                "name": "special"
-                            },
-                            "tag": "binary",
-                            "name": 5,
-                            "rhs": 2
-                        }
-                    ],
-                    "label": 3,
-                    "terminator": {
-                        "tag": "br",
-                        "label": 5
-                    }
-                },
-                {
-                    "instructions": [
-                        {
-                            "op": "sub",
-                            "lhs": {
-                                "name": "one"
-                            },
-                            "tag": "binary",
-                            "name": "other_special",
-                            "rhs": 1
-                        },
-                        {
-                            "op": "mul",
-                            "lhs": {
-                                "name": "other_special"
-                            },
-                            "tag": "binary",
-                            "name": 6,
-                            "rhs": 2
-                        }
-                    ],
-                    "label": 4,
-                    "terminator": {
-                        "tag": "br",
-                        "label": 5
-                    }
-                },
-                {
-                    "instructions": [
-                        {
-                            "tag": "phi",
-                            "else_label": 4,
-                            "then_label": 3,
-                            "then": {
-                                "name": 5
-                            },
-                            "name": 7,
-                            "else": {
-                                "name": 6
-                            }
-                        }
-                    ],
-                    "label": 5,
-                    "terminator": {
-                        "tag": "br",
-                        "label": 6
-                    }
-                },
-                {
-                    "instructions": [],
-                    "label": 2,
-                    "terminator": {
-                        "tag": "br",
-                        "label": 6
-                    }
-                },
-                {
-                    "instructions": [
-                        {
-                            "tag": "phi",
-                            "else_label": 2,
-                            "then_label": 5,
-                            "then": {
-                                "name": 7
-                            },
-                            "name": "test",
-                            "else": 2
-                        },
-                        {
-                            "op": "sgt",
-                            "lhs": {
-                                "name": "test"
-                            },
-                            "tag": "binary",
-                            "name": 8,
-                            "rhs": 2
-                        },
-                        {
-                            "op": "and",
-                            "lhs": {
-                                "name": "bo"
-                            },
-                            "tag": "binary",
-                            "name": "ref.0",
-                            "rhs": {
-                                "name": 8
-                            }
-                        },
-                        {
-                            "op": "or",
-                            "lhs": true,
-                            "tag": "binary",
-                            "name": "ref",
-                            "rhs": {
-                                "name": "ref.0"
-                            }
-                        }
-                    ],
-                    "label": 6,
-                    "terminator": {
-                        "tag": "ret",
-                        "value": {
-                            "name": "ref"
-                        }
-                    }
-                }
-            ],
-            "param_type": "i32",
-            "ret_type": "i1",
-            "name": "foo_func",
-            "param": "one"
+          "label": 0,
+          "instructions": [
+            {
+              "name": 0,
+              "tag": "binary",
+              "op": "add",
+              "lhs": {
+                "name": "one"
+              },
+              "rhs": 2
+            },
+            {
+              "name": "a",
+              "tag": "binary",
+              "op": "add",
+              "lhs": {
+                "name": 0
+              },
+              "rhs": 3
+            },
+            {
+              "name": 1,
+              "tag": "binary",
+              "op": "sgt",
+              "lhs": {
+                "name": "one"
+              },
+              "rhs": 1
+            }
+          ],
+          "terminator": {
+            "tag": "cond_br",
+            "cond": {
+              "name": 1
+            },
+            "then": 1,
+            "else": 2
+          }
         },
         {
-            "blocks": [
-                {
-                    "instructions": [
-                        {
-                            "op": "add",
-                            "lhs": {
-                                "name": "a"
-                            },
-                            "tag": "binary",
-                            "name": "increment",
-                            "rhs": 1
-                        },
-                        {
-                            "op": "add",
-                            "lhs": {
-                                "name": "increment"
-                            },
-                            "tag": "binary",
-                            "name": 0,
-                            "rhs": {
-                                "name": "increment"
-                            }
-                        }
-                    ],
-                    "label": 0,
-                    "terminator": {
-                        "tag": "ret",
-                        "value": {
-                            "name": 0
-                        }
-                    }
-                }
-            ],
-            "param_type": "i32",
-            "ret_type": "i32",
-            "name": "increment_then_twice",
-            "param": "a"
+          "label": 1,
+          "instructions": [
+            {
+              "name": 2,
+              "tag": "binary",
+              "op": "add",
+              "lhs": {
+                "name": "a"
+              },
+              "rhs": 4
+            }
+          ],
+          "terminator": {
+            "tag": "br",
+            "label": 3
+          }
         },
         {
-            "blocks": [
-                {
-                    "instructions": [
-                        {
-                            "op": "mul",
-                            "lhs": 5,
-                            "tag": "binary",
-                            "name": "doubledef_a",
-                            "rhs": 5
-                        },
-                        {
-                            "tag": "call",
-                            "arg": 4,
-                            "name": 0,
-                            "caller": {
-                                "name": "increment_then_twice"
-                            }
-                        }
-                    ],
-                    "label": 0,
-                    "terminator": {
-                        "tag": "ret",
-                        "value": {
-                            "name": 0
-                        }
-                    }
-                }
-            ],
-            "param_type": "void",
-            "ret_type": "i32",
-            "name": "main",
-            "param": ""
+          "label": 2,
+          "instructions": [],
+          "terminator": {
+            "tag": "br",
+            "label": 3
+          }
+        },
+        {
+          "label": 3,
+          "instructions": [
+            {
+              "name": 3,
+              "tag": "phi",
+              "then": {
+                "name": 2
+              },
+              "then_label": 1,
+              "else": {
+                "name": "a"
+              },
+              "else_label": 2
+            }
+          ],
+          "terminator": {
+            "tag": "ret",
+            "value": {
+              "name": 3
+            }
+          }
         }
-    ]
+      ]
+    },
+    {
+      "name": "main",
+      "ret_type": "i32",
+      "param": "",
+      "param_type": "void",
+      "blocks": [
+        {
+          "label": 0,
+          "instructions": [
+            {
+              "name": 0,
+              "tag": "call",
+              "caller": {
+                "name": "foo_func"
+              },
+              "arg": 1
+            }
+          ],
+          "terminator": {
+            "tag": "ret",
+            "value": {
+              "name": 0
+            }
+          }
+        }
+      ]
+    }
+  ]
 }

@@ -1,0 +1,48 @@
+{
+    "name": "module",
+    "functions": [
+        {
+            "blocks": [
+                {
+                    "instructions": [],
+                    "label": 0,
+                    "terminator": {
+                        "tag": "ret",
+                        "value": {
+                            "name": "a"
+                        }
+                    }
+                }
+            ],
+            "param_type": "i8*",
+            "ret_type": "i8*",
+            "name": "id",
+            "param": "a"
+        },
+        {
+            "blocks": [
+                {
+                    "instructions": [
+                        {
+                            "tag": "call",
+                            "arg": "some_string",
+                            "name": 0,
+                            "caller": {
+                                "name": "id"
+                            }
+                        }
+                    ],
+                    "label": 0,
+                    "terminator": {
+                        "tag": "ret",
+                        "value": 0
+                    }
+                }
+            ],
+            "param_type": "void",
+            "ret_type": "i32",
+            "name": "main",
+            "param": ""
+        }
+    ]
+}

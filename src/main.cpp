@@ -166,6 +166,32 @@ llvm::PHINode *generatePHI(const json::Object &instruction, const llvm::StringRe
   return PHI;
 }
 
+llvm::Value *generateStruct(const json::Object &instruction, const llvm::StringRef name, FunctionState &S)
+{
+  SmallVector<Value *, 0> Values;
+  SmallVector<Type *, 0> Types;
+  for (auto &v : *instruction.getArray("values"))
+  {
+    const auto Value = generateValue(v, S);
+    Values.push_back(Value);
+    Types.push_back(Value->getType());
+  }
+
+  const auto Ty = StructType::create(S.C, Types);
+  const auto Struct = UndefValue::get(Ty);
+
+  uint i = 0;
+  for (auto &Val : Values)
+  {
+    S.B.CreateInsertValue(Struct, Val, {i});
+    i++;
+  }
+
+  Struct->setName(name);
+
+  return Struct;
+}
+
 Value *generateInstruction(const json::Object &instruction, FunctionState &S)
 {
   const auto tag = *instruction.getString("tag");
@@ -178,6 +204,8 @@ Value *generateInstruction(const json::Object &instruction, FunctionState &S)
     I = generateCall(instruction, name, S);
   else if (tag == "phi")
     I = generatePHI(instruction, name, S);
+  else if (tag == "struct")
+    I = generateStruct(instruction, name, S);
 
   if (const auto iName = instruction.getInteger("name"))
     S.UnnamedValueTable[*iName] = I;
